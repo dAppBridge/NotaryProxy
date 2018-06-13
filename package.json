@@ -1,0 +1,11 @@
+{
+  "name": "NotaryProxy",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "dAppBridge.com",
+  "license": "",
+  "dependencies": {
+    "aws-sdk": "latest",
+    "js-sha3": "latest"
+  }
+}
