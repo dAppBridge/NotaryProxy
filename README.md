@@ -10,10 +10,10 @@ Other potential uses include validating automated API requests. E.g. When relyin
 
 The Notary Proxy works as a middleware, sitting between you and the actual destination of your request.  By being hosted as a validated authority NotaryProxy is able to prove that the content received (And passed on to 3rd parties) was served from the destination host.
 
-The production code runs on as a AWS Lambda service... with the package available for you to audit with digital proofs that it has not been altered.
+The production code runs as a AWS Lambda service... with the package available for you to audit with digital proofs that it has not been altered.
 
 
-**1. Access data through the Notary Proxy**
+### Access data through the Notary Proxy
 
 To access the Notary Proxy you require a API Key, please contact dapps@dappbridge.com for information.
 
@@ -48,10 +48,15 @@ Request Format (JSON):
 
 Where:
 request_key = A unique key for this request... this will be passed back to you in the response.
+
 request_url = Full [https://../path] URL that you wish to request
+
 method = GET or POST
+
 postParams = If you are using POST then you can supply a full form encoded body to be posted here
+
 request_process = Option, allows you to have the returned content JSON parsed and an individual element extracted.
+
 
 Example:
 
@@ -83,16 +88,18 @@ Example:
 Where:
 
 response_hash = A sha256 hash of the final output (To be used for validation that nothing has been altered)
+
 response_plain_txt = The final, processed output - in this case we have extracted the JSON elemnt bpi.USD.rate
+
 
 **Digital Proof**
 
 You would then pass the response + the response_hash onto your customer.  The customer can then be sure that the result you've supplied (6,389.7438) has not been tampered with by you by checking the response_hash (See below for validation procedure)
 
 
-**2. Proving the Data is Correct**
+### Proving the Data is Correct
 
-Notary Proxy currently runs as an AWS Lambda endpoint, using v1.0.0 of the NotaryProxy service.
+Notary Proxy runs as an AWS Lambda endpoint, using v1.0.0 of the NotaryProxy service.  This allows you to audit the source code (Via github) and then audit that the live production version is using this same version and has not been modified.
 
 **To get the current source code Hash**
 
@@ -101,7 +108,7 @@ https://github.com/dAppBridge/NotaryProxy/blob/master/Release/v1.0.0/NotaryProxy
 
 2. Use a 3rd party SHA256 gnerator to get the full package hash, we suggest something like:
 https://hash.online-convert.com/sha256-generator
-- This will let you uplaod the full archive
+- This will let you upload the full archive and create the SHA256 hash of the archive
 
 3. Make a note of the **base64** result of the hash, we'll compare this against the hash of the currently deployed version of NotaryProxy next...
 
@@ -123,14 +130,40 @@ region=us-east-1
 aws lambda list-versions-by-function --function-name NotaryProxy --profile NotaryProxyCodeAuditor
 ```
 
-This guarantees that the code currently running on AWS Lambda matches what is in the current release package!
+Returns:
 
+```
+{
+    "Versions": [
+        {
+            "FunctionName": "NotaryProxy",
+            "FunctionArn": "arn:aws:lambda:us-east-1:813175761664:function:NotaryProxy:$LATEST",
+            "Runtime": "nodejs8.10",
+            "Role": "arn:aws:iam::813175761664:role/NotaryProxy-executor",
+            "Handler": "index.handler",
+            "CodeSize": 6377676,
+            "Description": "",
+            "Timeout": 3,
+            "MemorySize": 128,
+            "LastModified": "2018-06-13T15:25:49.612+0000",
+            "CodeSha256": "e1ztPVSpKivoYiyy5rDfk7b/NCKJTHH8lxtnciwMPmk=",
+            "Version": "$LATEST",
+            "TracingConfig": {
+                "Mode": "PassThrough"
+            },
+            "RevisionId": "f94d240d-b37e-4c54-90e9-6e6fcc92626e"
+        }
+    ]
+}
+```
+
+This guarantees that the code currently running on AWS Lambda matches what is in the current release package!
 
 Once you have confirmed that the Notary Proxy being used is valid and have audited the code to your requirements you can then proceed to the next stage - verifying a response.
 
 **Verifying a data repsonse**
 
-To verify a data response simple take the response you've received (Plain text version) and then regenerate the keccak256 hash yourself at:
+To verify a data response simply take the response you've received (Plain text version) and then regenerate the keccak256 hash yourself at:
 
 https://emn178.github.io/online-tools/keccak_256.html
 
@@ -140,7 +173,7 @@ https://s3.amazonaws.com/notaryproxy-audit/[request_key]
 
 (Replacing [request_key] with your original request_key)
 
-This completes the audit...  By now you've
+This completes the audit...  So now you've
 
 1. Proven that the software is valid (Check https://github.com/dAppBridge/NotaryProxy)
 2. Proven that the live NotaryProxy service is running a legitimate version of the software
