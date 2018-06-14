@@ -9,28 +9,68 @@ const s3 = new AWS.S3({apiVersion: '2006-03-01'});
 const REQUEST_TIMEOUT = 20000; // 20s
 
  // Hashes can be confirmed at: https://emn178.github.io/online-tools/keccak_256.html
+let isJsonString = (str) => {
+    try {
+        JSON.parse(JSON.stringify(str));
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
 
 exports.handler = (event, context, callback) => {
 
-
-    let options = {
-      url: event.proxyRequest.request_url,
-      port: 443,
-      method: event.proxyRequest.method,
-      timeout: REQUEST_TIMEOUT
-    };
+    let options = {};
+    var util=require("util");
+    let urlObj = new url.parse(event.proxyRequest.request_url);
+    
 
     if(event.proxyRequest.method == "POST" &&
-        event.proxyRequest.postParams) {
-        if(event.proxyRequest.postParams.length > 0){
-            options.headers = {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Content-Length': event.proxyRequest.postParams.length
+        JSON.stringify(event.proxyRequest.postParams).length > 1) {
+        
+        if(isJsonString(event.proxyRequest.postParams)){
+            options = {
+              hostname: urlObj.hostname,
+              path: urlObj.path,
+              protocol: urlObj.protocol,
+              port: urlObj.port || 443,
+              method: event.proxyRequest.method,
+              timeout: REQUEST_TIMEOUT,
+              headers: {
+                
+                "Content-Type": 'application/json-rpc',
+                "Content-Length": JSON.stringify(event.proxyRequest.postParams).length
+              }
             };
         }
+        else {
+            options = {
+              hostname: urlObj.hostname,
+              path: urlObj.path,
+              protocol: urlObj.protocol,
+              port: urlObj.port || 443,
+              method: event.proxyRequest.method,
+              timeout: REQUEST_TIMEOUT,
+              headers: {
+                "Content-Type": 'application/x-www-form-urlencoded',
+                "Content-Length": event.proxyRequest.postParams.length
+              }
+            };
+        }
+        
+    } else {
+        options = {
+          hostname: urlObj.hostname,
+          path: urlObj.path,
+          protocol: urlObj.protocol,
+          port: urlObj.port || 443,
+          method: event.proxyRequest.method,
+          timeout: REQUEST_TIMEOUT
+        };
     }
 
-    const req = https.request(new url.URL(options.url), (res) => {
+
+    const req = https.request(options, (res) => {
         let body = '';
 
         //console.log('Status:', res.statusCode);
@@ -44,7 +84,7 @@ exports.handler = (event, context, callback) => {
                 event.proxyRequest.request_process.type,
                 event.proxyRequest.request_process.value);
 
-            let response_body_hashed = keccak256(processed_body);
+            let response_body_hashed = keccak256(processed_body.toString());
 
             let proxyResponse = {
                 request_key: event.proxyRequest.request_key,
@@ -63,18 +103,23 @@ exports.handler = (event, context, callback) => {
                 response_plain_txt: processed_body
             };
 
-            //    console.log(output);
+                
             callback(null, output);
         });
     });
 
     req.on('error', callback);
 
-    if(event.proxyRequest.method == "POST" 
-        && event.proxyRequest.postParams)
-        req.write(event.proxyRequest.postParams);
+    if(event.proxyRequest.method == "POST" &&
+        JSON.stringify(event.proxyRequest.postParams).length > 1) {
 
-    req.end();
+        if(isJsonString(event.proxyRequest.postParams))
+            req.write(JSON.stringify(event.proxyRequest.postParams));
+        else
+            req.write(event.proxyRequest.postParams);
+    }
+
+   req.end();
 };
 
 let processBody = (in_body, process_type, process_value) => {
@@ -125,11 +170,4 @@ let putObjectToS3 = (request_key, in_data) => {
     });
 }
 
-let isJsonString = (str) => {
-    try {
-        JSON.parse(str);
-    } catch (e) {
-        return false;
-    }
-    return true;
-}
+
