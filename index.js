@@ -19,8 +19,22 @@ let isJsonString = (str) => {
     return true;
 }
 
-exports.handler = (event, context, callback) => {
-
+//exports.handler = (event, context, callback) => {
+    {
+    let event = {
+        proxyRequest:
+            {
+                request_key: "0x28561ff190b6973735f342853ecb5f91c7b25f3a2020c8f1873c0c08599673b1",
+                request_url: "https://api.random.org/json-rpc/1/invoke",
+                method: "POST",
+                postParams: '{"jsonrpc":"2.0","method":"generateIntegers","params":{"apiKey":"7d4ab655-e778-4d9f-815a-98fd518908bd","n":1,"min":1,"max":100,"replacement":true,"base":10},"id":0}',
+                request_process:
+                    {
+                        type: "json_extract",
+                        value:"result.random.data"
+                    }
+            }
+    };
     let options = {};
     var util=require("util");
     let urlObj = new url.parse(event.proxyRequest.request_url);
@@ -40,7 +54,7 @@ exports.handler = (event, context, callback) => {
               headers: {
                 
                 "Content-Type": 'application/json-rpc',
-                "Content-Length": JSON.stringify(event.proxyRequest.postParams).length
+                "Content-Length": event.proxyRequest.postParams.length
               }
             };
         }
@@ -104,18 +118,21 @@ exports.handler = (event, context, callback) => {
                 response_plain_txt: processed_body
             };
 
-           callback(null, output);
+console.log(output);
+
+//           callback(null, output);
         });
     });
 
-    req.on('error', callback);
+ //   req.on('error', callback);
+ req.on('error', function(e){console.log(e);})
 
     if(event.proxyRequest.method == "POST" &&
         JSON.stringify(event.proxyRequest.postParams).length > 1) {
 
-        if(isJsonString(event.proxyRequest.postParams))
-            req.write(JSON.stringify(event.proxyRequest.postParams));
-        else
+        if(isJsonString(event.proxyRequest.postParams) ) {
+            req.write(event.proxyRequest.postParams);
+        } else
             req.write(event.proxyRequest.postParams);
     }
 
