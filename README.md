@@ -121,7 +121,7 @@ For your ease of audit and security we've created a read-only AWS account which 
 ```
 [NotaryProxyCodeAuditor]
 aws_access_key_id=AKIAISQD5XBAFXITXI7Q
-aws_secret_access_key=UoPeIfiXJWzs/S14DQiesiNWtT465owKVpMHiEZ0
+aws_secret_access_key=[Email dapps@dappbridge.com for access]
 region=us-east-1
 ```
 2. Now you can run the below command which will give you the date the service was last updated, but most importantly the **CodeSha256** which shows the full Sha256 hash of the current version for you to match against the hash you already have above.
