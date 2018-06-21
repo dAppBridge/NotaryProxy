@@ -39,8 +39,8 @@ exports.handler = (event, context, callback) => {
               timeout: REQUEST_TIMEOUT,
               headers: {
                 
-                "Content-Type": 'application/json-rpc',
-                "Content-Length": event.proxyRequest.postParams.length
+                "Content-Type": 'application/json-rpc'//,
+                //"Content-Length": event.proxyRequest.postParams.length
               }
             };
         }
