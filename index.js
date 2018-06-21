@@ -28,7 +28,7 @@ exports.handler = (event, context, callback) => {
 
     if(event.proxyRequest.method == "POST" &&
         JSON.stringify(event.proxyRequest.postParams).length > 1) {
-        
+        console.log("LEN:" + event.proxyRequest.postParams.length);
         if(isJsonString(event.proxyRequest.postParams)){
             options = {
               hostname: urlObj.hostname,
@@ -39,8 +39,8 @@ exports.handler = (event, context, callback) => {
               timeout: REQUEST_TIMEOUT,
               headers: {
                 
-                "Content-Type": 'application/json-rpc'//,
-                //"Content-Length": event.proxyRequest.postParams.length
+                "Content-Type": 'application/json-rpc',
+                "Content-Length": Buffer.byteLength(event.proxyRequest.postParams)
               }
             };
         }
@@ -54,7 +54,7 @@ exports.handler = (event, context, callback) => {
               timeout: REQUEST_TIMEOUT,
               headers: {
                 "Content-Type": 'application/x-www-form-urlencoded',
-                "Content-Length": event.proxyRequest.postParams.length
+                "Content-Length": Buffer.byteLength(event.proxyRequest.postParams)
               }
             };
         }
@@ -105,7 +105,7 @@ exports.handler = (event, context, callback) => {
             };
 
 
-           callback(null, output);
+          callback(null, output);
         });
     });
 
