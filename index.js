@@ -9,14 +9,23 @@ const s3 = new AWS.S3({apiVersion: '2006-03-01'});
 const REQUEST_TIMEOUT = 20000; // 20s
 
  // Hashes can be confirmed at: https://emn178.github.io/online-tools/keccak_256.html
-let isJsonString = (str) => {
-    let s =str.toString();
+
+let isJsonString = (item) => {
+    item = typeof item !== "string"
+        ? JSON.stringify(item)
+        : item;
+
     try {
-        JSON.parse(s);
+        item = JSON.parse(item);
     } catch (e) {
         return false;
     }
-    return true;
+
+    if (typeof item === "object" && item !== null) {
+        return true;
+    }
+
+    return false;
 }
 
 exports.handler = (event, context, callback) => {
@@ -28,7 +37,15 @@ exports.handler = (event, context, callback) => {
 
     if(event.proxyRequest.method == "POST" &&
         JSON.stringify(event.proxyRequest.postParams).length > 1) {
-        console.log("LEN:" + event.proxyRequest.postParams.length);
+        //console.log("LEN:" + event.proxyRequest.postParams.length);
+        /*
+        if(event.proxyRequest.postParams.indexOf('{') > 0) {
+            try{
+                event.proxyRequest.postParams = JSON.parse(event.proxyRequest.postParams);
+            } catch(e) {}
+        }
+        */
+        console.log(event.proxyRequest.postParams);
         if(isJsonString(event.proxyRequest.postParams)){
             options = {
               hostname: urlObj.hostname,
@@ -40,9 +57,10 @@ exports.handler = (event, context, callback) => {
               headers: {
                 
                 "Content-Type": 'application/json-rpc',
-                "Content-Length": Buffer.byteLength(event.proxyRequest.postParams)
+                "Content-Length": JSON.stringify(event.proxyRequest.postParams).length
               }
             };
+            
         }
         else {
             options = {
@@ -54,7 +72,7 @@ exports.handler = (event, context, callback) => {
               timeout: REQUEST_TIMEOUT,
               headers: {
                 "Content-Type": 'application/x-www-form-urlencoded',
-                "Content-Length": Buffer.byteLength(event.proxyRequest.postParams)
+                "Content-Length": event.proxyRequest.postParams.length
               }
             };
         }
@@ -70,7 +88,7 @@ exports.handler = (event, context, callback) => {
         };
     }
 
-
+    console.log(options);
     const req = https.request(options, (res) => {
         let body = '';
 
@@ -116,9 +134,9 @@ exports.handler = (event, context, callback) => {
         JSON.stringify(event.proxyRequest.postParams).length > 1) {
 
         if(isJsonString(event.proxyRequest.postParams) ) {
-            req.write(event.proxyRequest.postParams);
+            req.write(JSON.stringify(event.proxyRequest.postParams));
         } else
-            req.write(event.proxyRequest.postParams);
+            req.write(event.proxyRequest.postParams.toString());
     }
 
    req.end();
