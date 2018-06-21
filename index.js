@@ -10,8 +10,9 @@ const REQUEST_TIMEOUT = 20000; // 20s
 
  // Hashes can be confirmed at: https://emn178.github.io/online-tools/keccak_256.html
 let isJsonString = (str) => {
+    let s =str.toString();
     try {
-        JSON.parse(JSON.stringify(str));
+        JSON.parse(s);
     } catch (e) {
         return false;
     }
@@ -103,8 +104,7 @@ exports.handler = (event, context, callback) => {
                 response_plain_txt: processed_body
             };
 
-                
-            callback(null, output);
+           callback(null, output);
         });
     });
 
@@ -143,8 +143,9 @@ let processBody = (in_body, process_type, process_value) => {
 
             if(isJsonString(tmpObj) == false)
                 returnData = tmpObj;
-            else
+            else{
                 returnData = JSON.parse(tmpObj);
+            }
 
             return returnData;
 
