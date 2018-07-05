@@ -104,7 +104,7 @@ Notary Proxy runs as an AWS Lambda endpoint, using v1.0.0 of the NotaryProxy ser
 **To get the current source code Hash**
 
 1. Download the latest release package from:
-https://github.com/dAppBridge/NotaryProxy/blob/master/Release/v1.0.0/NotaryProxy-1.0.0.zip
+https://github.com/dAppBridge/NotaryProxy/blob/master/Release/v1.0.0/NotaryProxy-1.0.1.zip
 
 2. Use a 3rd party SHA256 gnerator to get the full package hash, we suggest something like:
 https://hash.online-convert.com/sha256-generator
@@ -120,11 +120,11 @@ For your ease of audit and security we've created a read-only AWS account which 
 
 ```
 [NotaryProxyCodeAudit]
-aws_access_key_id=AKIAJH3AMVMPOIR3UNFA
-aws_secret_access_key=[Email dapps@dappbridge.com for access]
+aws_access_key_id=AKIAIDOAU6LXQ2HFZ43A
+aws_secret_access_key=[Email dapps@dappbridge.com for access key]
 region=us-east-1
 ```
-2. Now you can run the below command which will give you the date the service was last updated, but most importantly the **CodeSha256** which shows the full Sha256 hash of the current version for you to match against the hash you already have above.
+2. Now you can run the below command which will give you the date the service was last updated, but most importantly the **CodeSha256** which shows the full Sha256 hash of the current version for you to match against the hash you already have above (Install aws command line guide: https://aws.amazon.com/cli).
 
 ```
 aws lambda list-versions-by-function --function-name NotaryProxy --profile NotaryProxyCodeAudit
@@ -136,26 +136,28 @@ Returns:
 {
     "Versions": [
         {
-            "FunctionName": "NotaryProxy",
-            "FunctionArn": "arn:aws:lambda:us-east-1:813175761664:function:NotaryProxy:$LATEST",
-            "Runtime": "nodejs8.10",
-            "Role": "arn:aws:iam::813175761664:role/NotaryProxy-executor",
-            "Handler": "index.handler",
-            "CodeSize": 6377676,
-            "Description": "",
-            "Timeout": 3,
-            "MemorySize": 128,
-            "LastModified": "2018-06-13T15:25:49.612+0000",
-            "CodeSha256": "e1ztPVSpKivoYiyy5rDfk7b/NCKJTHH8lxtnciwMPmk=",
-            "Version": "$LATEST",
             "TracingConfig": {
                 "Mode": "PassThrough"
-            },
-            "RevisionId": "f94d240d-b37e-4c54-90e9-6e6fcc92626e"
+            }, 
+            "Version": "$LATEST", 
+            "CodeSha256": "zelYDDP5U0i888z3tnUGLJJRuS06RtpFC0Kx2PH2e5I=", 
+            "FunctionName": "NotaryProxy", 
+            "MemorySize": 128, 
+            "RevisionId": "c4c76d0e-5336-4ca5-b2cb-7402fcf7dd7b", 
+            "CodeSize": 5421988, 
+            "FunctionArn": "arn:aws:lambda:us-east-1:813175761664:function:NotaryProxy:$LATEST", 
+            "Handler": "index.handler", 
+            "Role": "arn:aws:iam::813175761664:role/NotaryProxy-executor", 
+            "Timeout": 3, 
+            "LastModified": "2018-06-21T13:59:36.623+0000", 
+            "Runtime": "nodejs8.10", 
+            "Description": ""
         }
     ]
 }
 ```
+
+Which is a audit of the live version of NotaryProxy.  Compare the **CodeSha256** to the hash of the package downlaod to confirm it matches and the software hasn't been tampered with!
 
 This guarantees that the code currently running on AWS Lambda matches what is in the current release package!
 
